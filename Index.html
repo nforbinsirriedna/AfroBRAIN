@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AfroBRAIN - Edna Nforbin</title>
+<style>
+:root{--bg:#0e0f14;--card:#171923;--line:#2a2d3a;--accent:#6ee7b7;--accent2:#60a5fa;--text:#e6e8ef;--muted:#9aa0b2;}
+*{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);padding:0 0 80px 0}
+header{padding:28px 20px 16px 20px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:28px;letter-spacing:-0.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin-top:6px;font-size:13px;line-height:1.4}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 16px 0 16px}
+.card h3{margin:0 0 10px 0;font-size:15px;letter-spacing:0.02em;color:var(--accent)}
+canvas{width:100%;height:160px;background:#0a0b10;border-radius:12px;border:1px solid var(--line)}
+.row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+button{background:transparent;border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:999px;font-size:13px;font-weight:600}
+button.active{background:var(--text);color:#0e0f14;border-color:var(--text)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#12211b;color:var(--accent);font-size:11px;border:1px solid #1e3a2f}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{padding:12px;border-radius:12px;background:#12131b;border:1px solid var(--line)}
+.stat b{font-size:20px;display:block}
+small{color:var(--muted);font-size:11px}
+.footer{text-align:center;padding:24px;color:var(--muted);font-size:11px}
+a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<header>
+<h1>AfroBRAIN <span>v2</span></h1>
+<div class="sub">Low-cost ear-EEG research concept • Educational simulator only — not a medical device<br>
+<b>Founder:</b> Edna Nforbin, 13 • Form 3, Bamenda, Cameroon 🇨🇲 • Future Neurosurgeon<br>
+<span class="badge">Offline • No data • Open Research</span></div>
+</header>
+
+<div class="card">
+<h3>Concept: Earphone + Coin + Aloe</h3>
+<div class="grid">
+<div class="stat"><b>Coin</b><small>Conductive contact, replaces Ag/AgCl electrode</small></div>
+<div class="stat"><b>Aloe gel</b><small>Adhesive conductive interface, low-cost</small></div>
+<div class="stat"><b>Earphone housing</b><small>Mechanical retention in ear canal</small></div>
+<div class="stat"><b>Amplifier (v3)</b><small>Needed: µV signal → mV audio jack</small></div>
+</div>
+<p style="font-size:13px;color:var(--muted);line-height:1.5">Goal: Explore <$5 electrode for rural clinics. This build simulates EEG rhythms; it does not record biosignals.</p>
+</div>
+
+<div class="card">
+<h3>Simulated EEG — In-ear model</h3>
+<canvas id="eeg"></canvas>
+<div class="row">
+<button id="b-rest" class="active" onclick="setState('rest')">Alpha 10Hz — Rest</button>
+<button id="b-focus" onclick="setState('focus')">Beta 18Hz — Focus</button>
+<button id="b-theta" onclick="setState('theta')">Theta 5Hz — Drowsy</button>
+</div>
+<p id="label" style="font-size:12px;color:var(--muted);margin-top:10px">Alpha: occipital dominance at rest, eyes closed. Model only.</p>
+</div>
+
+<div class="card">
+<h3>Edna's Roadmap</h3>
+<p style="font-size:13px;line-height:1.6">
+Form 3 (2026) → GCE Science → Faculty of Medicine & Biomedical Sciences, Bamenda / Yaounde<br>
+→ Research: low-cost diagnostics for epilepsy screening<br>
+→ Long-term: Pediatric Neurosurgeon — build AfroBRAIN for Cameroon district hospitals
+</p>
+<small>Contact for mentorship: GitHub — edna-afrobrain • Email available on request. Seeking: IBRO, WFNS guidance on study path, not funding.</small>
+</div>
+
+<div class="footer">AfroBRAIN v2 Pro • Built in Mbouda/Bamenda, Oct 2026 • Founder: Edna Nforbin • Educational only</div>
+
+<script>
+let state='rest'; let t=0;
+const canvas=document.getElementById('eeg'); const ctx=canvas.getContext('2d');
+function resize(){ canvas.width=canvas.clientWidth*2; canvas.height=160*2; } resize();
+window.onresize=resize;
+function setState(s){
+ state=s;
+ document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+ document.getElementById('b-'+s).classList.add('active');
+ const labels={
+   rest:'Alpha 10Hz — resting wakefulness, 30-50µV simulated. Eyes closed model.',
+   focus:'Beta 18Hz — active concentration, 10-20µV simulated. Task engagement.',
+   theta:'Theta 5Hz — drowsy/inward attention, high amplitude simulated.'
+ };
+ document.getElementById('label').innerText=labels[s];
+}
+function draw(){
+ t+=0.02;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.strokeStyle='#6ee7b7'; ctx.lineWidth=2.5; ctx.beginPath();
+ for(let x=0;x<canvas.width;x++){
+   let freq = state=='rest'?10: state=='focus'?18:5;
+   let amp = state=='rest'?55: state=='focus'?28:70;
+   let noise = (Math.random()-0.5)*8;
+   let y = canvas.height/2 + Math.sin(x/45 + t*freq)*amp + noise;
+   if(x==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+ }
+ ctx.stroke();
+ ctx.strokeStyle='rgba(96,165,250,0.3)'; ctx.lineWidth=1; ctx.beginPath();
+ ctx.moveTo(0,canvas.width); ctx.lineTo(canvas.width,canvas.height/2); ctx.stroke();
+ requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
